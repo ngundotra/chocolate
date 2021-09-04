@@ -3,7 +3,10 @@ import {
     clusterApiUrl
 } from '@solana/web3.js';
 
+var localConnection: Connection | null = null;
+
 export function getConnection(): Connection {
-    let conn = new Connection(clusterApiUrl('mainnet-beta'));
-    return conn;
+    if (!localConnection)
+        localConnection = new Connection(clusterApiUrl('mainnet-beta'));
+    return localConnection;
 }
