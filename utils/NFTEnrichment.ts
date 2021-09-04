@@ -1,14 +1,17 @@
 import {
     PublicKey,
 } from '@solana/web3.js';
-
+import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import {
+    decodeTokenAccountInfo
+} from './Token';
 import {
     NFT_PUBKEY,
-    TOKEN_PROGRAM_ID
 } from './Constants';
 import {
     getConnection
 } from './Connection';
+import { forEach } from 'lodash';
 
 export async function getNFTs(publicKey: PublicKey): Promise<Array<String>> {
     let connection = getConnection();
@@ -16,7 +19,13 @@ export async function getNFTs(publicKey: PublicKey): Promise<Array<String>> {
         publicKey,
         { programId: TOKEN_PROGRAM_ID },
     );
-    console.log(tokenList);
+    let tokens = tokenList.value;
+
+    var nfts = []; 
+    tokens.forEach((token) => {
+        let pubkey = token.pubkey;
+        let tokenInfo = decodeTokenAccountInfo(token.account.data);
+    });
     return( ["Penis!"] );
 }
 
