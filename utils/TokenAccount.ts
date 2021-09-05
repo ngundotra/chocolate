@@ -1,9 +1,9 @@
 import { getConnection } from "./Connection";
 import { PUBKEY, TOKEN_PROGRAM_ID } from "./Constants";
-import { Token, u64 } from "@solana/spl-token";
-import { AccountInfo, PublicKey } from "@solana/web3.js";
-import { decodeTokenAccountInfo, getMintInfo } from "./Token";
-import { getTokenInfo, getTokenName, getTokenMap } from "./TokenRegistry";
+import { u64 } from "@solana/spl-token";
+import { PublicKey } from "@solana/web3.js";
+import { decodeTokenAccountInfo } from "./Token";
+import { getTokenInfo, getTokenName } from "./TokenRegistry";
 import { TokenInfo } from "@solana/spl-token-registry";
 const CoinGecko = require("coingecko-api");
 
