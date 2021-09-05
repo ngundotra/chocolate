@@ -3,6 +3,7 @@ import { getConnection } from './Connection';
 import { PublicKey } from '@solana/web3.js';
 import { decodeTokenAccountInfo, getMintInfo } from './Token';
 import { decodeMetadata } from './metaplex';
+import axios from 'axios';
 
 // extendBorsh();
 let conn = getConnection();
@@ -53,7 +54,13 @@ PublicKey.findProgramAddress(
             (accountInfo) => {
                 console.log("we valid: ", accountInfo);
                 let metadata = decodeMetadata(accountInfo.data);
-                console.log("[METAPLEX]decoded metadata: ", metadata);
+                console.log("[METAPLEX]uri: ", metadata.data.uri);
+                axios.get(
+                    metadata.data.uri,
+                ).then(
+                    (response) => { console.log("[URI]", response.data)},
+                    (reason) => { console.error("failed to fetch URI: ", reason) },
+                )
             },
             (reason) =>  {
                 console.error("unable to fetch metadata: ", reason);

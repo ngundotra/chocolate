@@ -7,20 +7,12 @@ import { decodeTokenAccountInfo, getMintInfo } from './Token';
 import { NFT_PUBKEY } from './Constants';
 import { getConnection } from './Connection';
 import { getAccountInfo } from './FetchAccount';
+import { decodeMetadata, getMetadata, Metadata } from './metaplex';
+import axios from 'axios';
 
-
-let METAPLEX_PROGRAM_ID = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
-let METAPLEX_METADATA_PREFIX = "metadata";
-
-export async function getNFTMetadataAccountInfo(mintPubkey: PublicKey): Promise<AccountInfo<Buffer>> {
-    let seeds = [Buffer.from(METAPLEX_METADATA_PREFIX), METAPLEX_PROGRAM_ID.toBuffer(), mintPubkey.toBuffer()];
-    console.log('seeds: ', seeds);
-    let metadataPubkey = await PublicKey.findProgramAddress(
-        seeds,
-        METAPLEX_PROGRAM_ID,
-    )[0];
-
-    console.log("metadata pubkey: ", metadataPubkey);
+export async function getNftMetadataAccountInfo(mintPubkey: PublicKey): Promise<AccountInfo<Buffer>> {
+    let metadataPubkeyId = await getMetadata(mintPubkey.toString());
+    let metadataPubkey = new PublicKey(metadataPubkeyId);
 
     if (typeof metadataPubkey !== "undefined")
     {
@@ -40,51 +32,34 @@ export async function getNFTs(publicKey: PublicKey): Promise<Array<String>> {
     let tokens = tokenList.value;
 
     var nfts: string[] = []; 
-    tokens.forEach((token) => {
-        let tokenInfo = decodeTokenAccountInfo(token.account.data);
-        getMintInfo(new PublicKey(tokenInfo.mint)).then(
-            (mintInfo) => {
-                getNFTMetadataAccountInfo(new PublicKey(tokenInfo.mint)).then(
-                    (accountInfo) => {
-                        console.log("---------------------");
-                        console.log("Found possible NFT!");
-                        console.log("mintInfo: ", mintInfo);
-                        // console.log(token.pubkey.toString());
-                        // console.log((new PublicKey(mintInfo.mintAuthority!)).toString());
-                        console.log(accountInfo);
-                        console.log("---------------------");
-                        nfts.push(token.pubkey.toString());
-                    },
-                    (error) => {
-                        console.error("error'd", error);
-                    }
-                )
-            }
-        );
-    });
 
-    //     getMintInfo(new PublicKey(tokenInfo.mint)).then(
-    //         (mintInfo) => {
-    //             let supply = u64.fromBuffer(<Buffer><unknown>(mintInfo.supply));
-    //             let one = u64.fromBuffer(Buffer.from(
-    //                 [1,0,0,0,0,0,0,0]
-    //             ));
-    //             if (typeof accountInfo !== "undefined")
-    //             {
-    //                 console.log("---------------------");
-    //                 console.log("Found possible NFT!");
-    //                 // console.log(token.pubkey.toString());
-    //                 // console.log((new PublicKey(mintInfo.mintAuthority!)).toString());
-    //                 console.log(accountInfo);
-    //                 console.log("---------------------");
-    //                 nfts.push(token.pubkey.toString());
-    //             };
-    //         }
-    //     );
-    // });
-    return( ["Penis!"] );
+    for(var i = 0; i < tokens.length; i++) {
+        let tokenInfo = decodeTokenAccountInfo(tokens[i].account.data);
+        let mintInfo = await getMintInfo(new PublicKey(tokenInfo.mint));
+        
+        let metadataAccountInfo = await getNftMetadataAccountInfo(new PublicKey(tokenInfo.mint));
+        // console.log("---------------------");
+        // console.log("Found possible NFT!");
+        let metadata = decodeMetadata(metadataAccountInfo.data);
+        // console.log(metadata.data.uri);
+        // console.log("---------------------");
+        nfts.push(metadata.data.uri);
+    }
+    return(nfts);
 }
 
 getNFTs(NFT_PUBKEY).then(
-    (value: String[]) => console.log("done!")
+    (value: string[]) => {
+        value.forEach(
+            (uri) => {
+                axios.get(uri).then(
+                    (response) => {
+                        // console.log('\n');
+                        // console.log(`${response.data.name} <${response.data.symbol}>`);
+                        console.log(response.data.image ?? "no image");
+                    }
+                )
+            }
+        )
+    } 
 )

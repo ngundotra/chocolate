@@ -452,9 +452,6 @@ export const METADATA_SCHEMA = new Map<any, any>([
 
 const METADATA_REPLACE = new RegExp('\u0000', 'g');
 
-export function capitalizeFirstLetter(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-}
 
 export const decodeMetadata = (buffer: Buffer): Metadata => {
     const metadata = deserializeUnchecked(
@@ -467,3 +464,19 @@ export const decodeMetadata = (buffer: Buffer): Metadata => {
     metadata.data.symbol = metadata.data.symbol.replace(METADATA_REPLACE, '');
     return metadata;
 };
+
+export async function getMetadata(
+    tokenMint: StringPublicKey,
+): Promise<StringPublicKey> {
+    const PROGRAM_IDS = programIds();
+    return (
+        await findProgramAddress(
+            [
+            Buffer.from(METADATA_PREFIX),
+            toPublicKey(PROGRAM_IDS.metadata).toBuffer(),
+            toPublicKey(tokenMint).toBuffer(),
+            ],
+            toPublicKey(PROGRAM_IDS.metadata),
+        )
+    )[0];
+}
