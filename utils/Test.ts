@@ -2,10 +2,9 @@ import { METAPLEX_PROGRAM_ID } from './Constants';
 import { getConnection } from './Connection';
 import { PublicKey } from '@solana/web3.js';
 import { decodeTokenAccountInfo, getMintInfo } from './Token';
-import { decodeMetadata } from './metaplex/metadata';
-import { extendBorsh } from './metaplex/borsh';
+import { decodeMetadata } from './metaplex';
 
-extendBorsh();
+// extendBorsh();
 let conn = getConnection();
 // conn.getProgramAccounts(METAPLEX_PROGRAM_ID, {dataSlice: {length: 100, offset: 0}}).then(
 //     (accounts) => {
