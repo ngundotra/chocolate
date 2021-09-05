@@ -1,6 +1,6 @@
 import { getConnection } from "./Connection";
-import { PUBKEY, TOKEN_PROGRAM_ID } from "./Constants";
-import { Token } from '@solana/spl-token';
+import { PUBKEY } from "./Constants";
+import { Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { PublicKey } from "@solana/web3.js";
 import { decodeTokenAccountInfo, getMintInfo } from "./Token";
 

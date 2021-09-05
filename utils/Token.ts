@@ -1,13 +1,6 @@
 
-// import * as BufferLayout from "@solana/buffer-layout";
-
-// /**
-//  * Layout for a public key
-//  */
-// const publicKey = (property: string = 'publicKey'): BufferLayout.Layout => {
-//     return BufferLayout.blob(32, property);
-// };
-import { AccountInfo, AccountLayout, MintInfo, MintLayout } from "@solana/spl-token";
+import { AccountInfo, AccountLayout, MintInfo, MintLayout, ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+export type TokenAccountInfo = AccountInfo;
 import { PublicKey } from "@solana/web3.js";
 import { getAccountInfo } from "./FetchAccount";
 
@@ -24,5 +17,3 @@ export async function getMintInfo(pubkey: PublicKey): Promise<MintInfo> {
     let mintInfo: MintInfo = MintLayout.decode(accountInfo.data);
     return mintInfo;
 }
-
-export type TokenAccountInfo = AccountInfo;

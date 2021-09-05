@@ -1,0 +1,7 @@
+{
+    "compilerOptions": {
+        "typeRoots": ["overrides", "node_modules/@types"],
+        "esModuleInterop": true,
+        "target": "ES5"
+    }
+}
