@@ -1,7 +1,8 @@
 import { getConnection } from "./Connection";
 import { PUBKEY, TOKEN_PROGRAM_ID } from "./Constants";
 import { Token } from '@solana/spl-token';
-import { decodeTokenAccountInfo } from "./Token";
+import { PublicKey } from "@solana/web3.js";
+import { decodeTokenAccountInfo, getMintInfo } from "./Token";
 
 async function main() {
     let connection = getConnection();
@@ -19,10 +20,17 @@ async function getTokens() {
     let tokens = tokenRes.value;
 
     tokens.forEach((token) => {
-        console.log(token.pubkey);
         let tokenInfo = decodeTokenAccountInfo(token.account.data);
-        console.log(tokenInfo);
-        console.log("\n");
+        getMintInfo(new PublicKey(tokenInfo.mint)).then(
+            (mintInfo) => {
+                console.log("Token Info");
+                console.log("---------------------");
+                console.log(token.pubkey);
+                console.log(tokenInfo);
+                console.log(mintInfo);
+                console.log("\n");
+            }
+        );
     });
 }
 
