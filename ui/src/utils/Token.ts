@@ -1,8 +1,9 @@
 
 import { AccountInfo, AccountLayout, MintInfo, MintLayout, ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-export type TokenAccountInfo = AccountInfo;
 import { PublicKey } from "@solana/web3.js";
 import { getAccountInfo } from "./FetchAccount";
+
+export type TokenAccountInfo = AccountInfo;
 
 export function decodeTokenAccountInfo(buffer: Buffer): AccountInfo {
     let accountInfo: AccountInfo = AccountLayout.decode(buffer);

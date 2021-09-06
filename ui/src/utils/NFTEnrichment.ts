@@ -10,12 +10,11 @@ import { getAccountInfo } from './FetchAccount';
 import { decodeMetadata, getMetadata, Metadata } from './metaplex';
 import axios from 'axios';
 
-export async function getNftMetadataAccountInfo(mintPubkey: PublicKey): Promise<AccountInfo<Buffer>> {
+export async function getNftMetadataAccountInfo(mintPubkey: PublicKey): Promise<AccountInfo<Buffer> | null> {
     let metadataPubkeyId = await getMetadata(mintPubkey.toString());
     let metadataPubkey = new PublicKey(metadataPubkeyId);
 
-    if (typeof metadataPubkey !== "undefined")
-    {
+    if (typeof metadataPubkey !== "undefined") {
         let accountInfo = await getAccountInfo(metadataPubkey, false);
         return accountInfo;
     };
@@ -35,30 +34,31 @@ export async function getNFTs(publicKey: PublicKey): Promise<Array<String>> {
 
     for(var i = 0; i < tokens.length; i++) {
         let tokenInfo = decodeTokenAccountInfo(tokens[i].account.data);
-        let mintInfo = await getMintInfo(new PublicKey(tokenInfo.mint));
+        // let mintInfo = await getMintInfo(new PublicKey(tokenInfo.mint));
         
         let metadataAccountInfo = await getNftMetadataAccountInfo(new PublicKey(tokenInfo.mint));
+        if (typeof metadataAccountInfo === "undefined")
+            continue;
+
         // console.log("---------------------");
         // console.log("Found possible NFT!");
-        let metadata = decodeMetadata(metadataAccountInfo.data);
+        let metadata = decodeMetadata(metadataAccountInfo!.data);
         // console.log(metadata.data.uri);
         // console.log("---------------------");
-        nfts.push(metadata.data.uri);
+        let uri = metadata.data.uri;
+        let response = await axios.get(uri);
+
+        if ((response.data.image ?? "").length > 0)
+            nfts.push(metadata.data.uri);
     }
     return(nfts);
 }
 
 getNFTs(NFT_PUBKEY).then(
-    (value: string[]) => {
+    (value) => {
         value.forEach(
-            (uri) => {
-                axios.get(uri).then(
-                    (response) => {
-                        // console.log('\n');
-                        // console.log(`${response.data.name} <${response.data.symbol}>`);
-                        console.log(response.data.image ?? "no image");
-                    }
-                )
+            (imageUrl) => {
+                console.log(imageUrl); 
             }
         )
     } 
