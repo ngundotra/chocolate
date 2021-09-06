@@ -19,20 +19,12 @@ export function MetadataImage(props: ImageProps) {
         // Load image by parsing metadata json... smh
         fetch(props.src!).then(
             (redirectResponse) => {
-                fetch(redirectResponse.url).then(
-                    (metadataResponse) => {
-                        metadataResponse.json().then(
-                            (metadata) => {
-                                console.log(props.src, ":", metadata); 
-                                setState({
-                                    isLoading: false,
-                                    isLoaded: true,
-                                    url: metadata.image
-                                });
-                            }
-                        )
-                    }
-                )
+                console.log(props.src, ":", redirectResponse.url); 
+                setState({
+                    isLoading: false,
+                    isLoaded: true,
+                    url: redirectResponse.url 
+                });
             }
         )
     }

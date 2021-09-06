@@ -22,7 +22,7 @@ export async function getNftMetadataAccountInfo(mintPubkey: PublicKey): Promise<
     return null;
 }
 
-export async function getNFTs(publicKey: PublicKey): Promise<Array<String>> {
+export async function getNFTs(publicKey: PublicKey): Promise<Array<any>> {
     let connection = getConnection();
     let tokenList = await connection.getTokenAccountsByOwner(
         publicKey,
@@ -42,14 +42,13 @@ export async function getNFTs(publicKey: PublicKey): Promise<Array<String>> {
 
         // console.log("---------------------");
         // console.log("Found possible NFT!");
-        let metadata = decodeMetadata(metadataAccountInfo!.data);
+        let onChainMetadata = decodeMetadata(metadataAccountInfo!.data);
         // console.log(metadata.data.uri);
         // console.log("---------------------");
-        let uri = metadata.data.uri;
+        let uri = onChainMetadata.data.uri;
         let response = await axios.get(uri);
-
-        if ((response.data.image ?? "").length > 0)
-            nfts.push(metadata.data.uri);
+        // console.log(`enrichment: ${response.data.image}`);
+        nfts.push(response.data);
     }
     return(nfts);
 }

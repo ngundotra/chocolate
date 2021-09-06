@@ -23,6 +23,8 @@ import { getNFTs } from "./utils/NFTEnrichment";
 import './Loading.scss';
 
 type CollectibleState = {
+    symbol: string,
+    name: string,
     url: string,
 };
 
@@ -30,7 +32,8 @@ function renderTableData(collectibles: CollectibleState[]) {
     return collectibles.map((collectible,index) => {
         return (
             <Tr key={index}>
-                <Td>{collectible.url}</Td>
+                <Td>{collectible.symbol}</Td>
+                <Td>{collectible.name}</Td>
                 <Td><MetadataImage src={collectible.url} /></Td>
             </Tr>
         )
@@ -41,7 +44,10 @@ function renderDummyData() {
     return (
         <Tr>
             <Td>
-                <Box width={500} height={100} className={'loading-element'} backgroundColor="purple.300" />
+                <Box width={300} height={100} className={'loading-element'} backgroundColor="purple.300" />
+            </Td>
+            <Td>
+                <Box width={300} height={100} className={'loading-element'} backgroundColor="purple.300" />
             </Td>
             <Td>
                 <Box width={100} height={100} className={'loading-element'} />
@@ -55,8 +61,6 @@ export function CollectiblesView() {
         isLoading: false,
         isLoaded: false,
         collectibles: Array<CollectibleState>(0),
-            // { url: "https://arweave.net/SICKW7qkU5_WZl7wZNbWc1FmBbqMJm79hfaf-AQ_NrE" },
-        // ]
     };
     const [state, setState] = useState(initState);
 
@@ -70,7 +74,11 @@ export function CollectiblesView() {
 
         getNFTs(NFT_PUBKEY).then(
             (nfts) => {
-                let collectibles = nfts.map((imageUrl) => { return {url: imageUrl.toString()} });
+                let collectibles = nfts.map((metadata) => { return {
+                    name: metadata.name,
+                    symbol: metadata.symbol,
+                    url: metadata.image.toString()
+                }});
                 console.log("should have loaded");
                 setState({
                     isLoaded: true,
@@ -84,13 +92,13 @@ export function CollectiblesView() {
         )
     }
 
-    // console.log("[appstate] ", appState);
     if (state.isLoading)
         return (
             <Table>
                 <Thead>
                     <Tr>
-                        <Th>Url</Th>
+                        <Th>Symbol</Th>
+                        <Th>Name</Th>
                         <Th>Image</Th>
                     </Tr>
                 </Thead>
@@ -104,7 +112,8 @@ export function CollectiblesView() {
         <Table>
             <Thead>
                 <Tr>
-                    <Th>Url</Th>
+                    <Th>Symbol</Th>
+                    <Th>Name</Th>
                     <Th>Image</Th>
                 </Tr>
             </Thead>
