@@ -10,32 +10,6 @@ const CoinGecko = require("coingecko-api");
 // Initiate the CoinGecko API Client
 const CoinGeckoClient = new CoinGecko();
 
-// DEMO
-async function demo() {
-    // Target account
-    let account = PUBKEY;
-    // Get wallet data
-    let walletData = await getFungibleTokens(account);
-
-    // Print wallet net worth
-    console.log("Wallet value: ", walletData.netWorth);
-
-    // Print each token owned
-    for (let i = 0; i < walletData.tokens.length; i++) {
-        let token: any = walletData.tokens[i];
-        console.log(
-            token.name.padEnd(10).substring(0, 10),
-            "\t\t\tAmount: ",
-            (Math.floor(token.amount * 100) / 100).toFixed(2),
-            "\t\t\tPrice: ",
-            (Math.floor(token.price * 100) / 100).toFixed(2),
-            "\t\t\tValue: ",
-            token.price * token.amount
-        );
-    }
-}
-demo();
-
 /**
  * Get all fungible tokens for given account and return tokens with
  * relevant data.
@@ -43,7 +17,7 @@ demo();
  * @param accountAddr PublicKey of target token account
  * @returns Wallet data wrapped in promise
  */
-async function getFungibleTokens(accountAddr: PublicKey) {
+export async function getFungibleTokens(accountAddr: PublicKey) {
     // Connect to chain
     let connection = getConnection();
 
