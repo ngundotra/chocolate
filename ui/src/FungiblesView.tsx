@@ -12,13 +12,12 @@ import {
     Tbody,
 } from "@chakra-ui/react";
 import { getFungibleTokens } from "./utils/FungibleTokenAccount";
-import { PUBKEY } from "./utils/Constants";
 import { PublicKey } from "@solana/web3.js";
 
 /**
  * Display fungible tokens and total value
  */
-export default function FungiblesView() {
+export default function FungiblesView(props: any) {
     // Create state variables
     let temp: any[] = [];
     const [walletTokens, setWalletTokens] = React.useState(temp);
@@ -29,8 +28,8 @@ export default function FungiblesView() {
      * Load wallet data on page load
      */
     React.useEffect(() => {
-        getWalletData(PUBKEY);
-    }, []);
+        getWalletData(props.pubkey);
+    }, [props.pubkey]);
 
     /**
      *  Get wallet data and set loading variables

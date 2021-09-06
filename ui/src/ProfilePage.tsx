@@ -1,10 +1,11 @@
 import * as React from "react";
 
-import { Box, Grid, Image } from "@chakra-ui/react";
+import { Box, Grid } from "@chakra-ui/react";
 
 import { CollectiblesView } from "./CollectiblesView";
 import FungiblesView from "./FungiblesView";
 import { NFT_ADDR } from "./utils/Constants";
+import { PUBKEY } from "./utils/Constants";
 
 export function ProfilePage() {
     return (
@@ -13,7 +14,7 @@ export function ProfilePage() {
                 <h1>Pubkey: {NFT_ADDR.toString()}</h1>
             </Box>
             <CollectiblesView />
-            <FungiblesView />
+            <FungiblesView pubkey={PUBKEY} />
         </Grid>
     );
 }
