@@ -1,9 +1,8 @@
 import { getConnection } from "./Connection";
-import { PUBKEY } from "./Constants";
 import { u64, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
 import { decodeTokenAccountInfo } from "./Token";
-import { getTokenInfo, getTokenName } from "./FungibleTokenRegistry";
+import { getTokenMap, getTokenName } from "./FungibleTokenRegistry";
 import { TokenInfo } from "@solana/spl-token-registry";
 const CoinGecko = require("coingecko-api");
 
@@ -20,15 +19,21 @@ const CoinGeckoClient = new CoinGecko();
 export async function getFungibleTokens(accountAddr: PublicKey) {
     // Connect to chain
     let connection = getConnection();
-
     // Get tokens in account
-    let tokenRes = await connection.getTokenAccountsByOwner(accountAddr, {
-        programId: TOKEN_PROGRAM_ID,
-    });
+    let tokenRes;
+    try {
+        tokenRes = await connection.getTokenAccountsByOwner(accountAddr, {
+            programId: TOKEN_PROGRAM_ID,
+        });
+    } catch {
+        throw new Error("Couldn't load user data");
+    }
+
     let tokens = tokenRes.value;
 
-    // Initialize coin gecko and wallet data
+    // Initialize CoinGecko map and wallet data
     let coinMap = await getCoinMap();
+    let tokenMap = await getTokenMap();
     let tokenArr: any[] = [];
     let walletData = {
         addr: accountAddr.toString(),
@@ -36,6 +41,7 @@ export async function getFungibleTokens(accountAddr: PublicKey) {
         tokens: tokenArr,
     };
 
+    // Iterate through all tokens in account
     for (let i = 0; i < tokens.length; i++) {
         let currToken = tokens[i];
         let tokenInfo = decodeTokenAccountInfo(currToken.account.data);
@@ -44,24 +50,32 @@ export async function getFungibleTokens(accountAddr: PublicKey) {
         let tokenName = await getTokenName(mintAddr);
 
         // Continue if token exists in registry
-        if (tokenName != null) {
-            let mintInfo = await getTokenInfo(mintAddr);
+        if (tokenName != null && tokenMap != null) {
+            let mintInfo = tokenMap[mintAddr];
 
             let amount = getTokenAmount(tokenInfo, mintInfo);
-            let price = await getTokenPrice(mintInfo, coinMap);
 
-            // Add relevant tokendata to wallet data
-            let newToken = {
-                name: tokenName,
-                amount: amount,
-                price: price,
-                image: mintInfo && mintInfo.logoURI,
-            };
-            walletData.tokens.push(newToken);
+            // Filter out tokens with zero quantity
+            if (amount > 0) {
+                let price = await getTokenPrice(mintInfo, coinMap);
 
-            // Update wallet total net worth
-            let value = amount * price;
-            walletData.netWorth += value;
+                // Add relevant tokendata to wallet data
+                let newToken = {
+                    name: tokenName,
+                    amount: amount,
+                    price: price,
+                    website:
+                        mintInfo &&
+                        mintInfo.extensions &&
+                        mintInfo.extensions.website,
+                    image: mintInfo && mintInfo.logoURI,
+                };
+                walletData.tokens.push(newToken);
+
+                // Update wallet total net worth
+                let value = amount * price;
+                walletData.netWorth += value;
+            }
         }
     }
     return walletData;
@@ -95,13 +109,17 @@ async function getTokenPriceById(tokenId: string) {
     if (tokenId == null || tokenId === "") {
         return 0;
     }
-    let response = await CoinGeckoClient.coins.fetch(tokenId, {
-        tickers: false,
-        developer_data: false,
-        community_data: false,
-        localization: false,
-    });
-    return response.data.market_data.current_price.usd;
+    try {
+        let response = await CoinGeckoClient.coins.fetch(tokenId, {
+            tickers: false,
+            developer_data: false,
+            community_data: false,
+            localization: false,
+        });
+        return response.data.market_data.current_price.usd;
+    } catch {
+        throw new Error("Couldn't load data from CoinGecko");
+    }
 }
 
 /**
@@ -146,6 +164,7 @@ async function getTokenPrice(
 async function getCoinMap() {
     let res = await CoinGeckoClient.coins.list();
     let coinList = res.data;
+
     if (coinList != null) {
         return coinList.reduce(
             (map: { [symbol: string]: string }, tokenInfo: any) => {

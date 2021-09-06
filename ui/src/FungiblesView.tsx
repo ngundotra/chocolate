@@ -10,6 +10,8 @@ import {
     Th,
     Td,
     Tbody,
+    LinkBox,
+    LinkOverlay,
 } from "@chakra-ui/react";
 import { getFungibleTokens } from "./utils/FungibleTokenAccount";
 import { PublicKey } from "@solana/web3.js";
@@ -52,13 +54,19 @@ export default function FungiblesView(props: any) {
             <Box
                 d="flex"
                 justifyContent="center"
+                alignItems="center"
                 p="6"
                 textTransform="uppercase"
             >
-                <Text fontWeight="bold" letterSpacing="wide">
+                <Text
+                    fontWeight="bold"
+                    color="gray.500"
+                    letterSpacing="wide"
+                    fontSize="md"
+                >
                     Net worth
                 </Text>
-                <Text isNumeric fontWeight="semibold" color="gray.500" ml="3">
+                <Text fontWeight="semibold" ml="3" fontSize="lg">
                     {"$"}
                     {walletValue.toFixed(2)}
                 </Text>
@@ -70,42 +78,45 @@ export default function FungiblesView(props: any) {
      * Display table of fungible tokens owned
      */
     const TokenSection = () => {
-        // Create row for each token. Filter out tokens with zero quantity
-        const tokenView = walletTokens
-            .filter((token) => token.amount > 0)
-            .map((token) => {
-                return (
-                    <Tr
-                        fontWeight="semibold"
-                        textTransform="uppercase"
-                        key={token.name}
-                    >
-                        <Td>
-                            <Box d="flex" alignItems="center">
-                                <Image
-                                    maxW="50px"
-                                    src={token.image}
-                                    alt={token.name}
-                                />
-                                <Text ml="15px" as="h6" maxW="250px">
-                                    {token.name}
-                                </Text>
-                            </Box>
-                        </Td>
+        // Create row for each token.
+        const tokenView = walletTokens.map((token) => {
+            return (
+                <Tr
+                    fontWeight="semibold"
+                    textTransform="uppercase"
+                    key={token.name}
+                >
+                    <Td>
+                        <LinkBox d="flex" alignItems="center" w="fit-content">
+                            <Image
+                                maxW="50px"
+                                src={token.image}
+                                alt={token.name}
+                            />
+                            <LinkOverlay
+                                href={token.website}
+                                isExternal
+                                ml="15px"
+                                maxW="250px"
+                            >
+                                {token.name}
+                            </LinkOverlay>
+                        </LinkBox>
+                    </Td>
 
-                        <Td color="gray.500" fontSize="xs">
-                            {token.amount}
-                        </Td>
-                        <Td color="gray.500" fontSize="xs">
-                            ${token.price.toFixed(2)}
-                        </Td>
+                    <Td color="gray.500" fontSize="xs">
+                        {token.amount}
+                    </Td>
+                    <Td color="gray.500" fontSize="xs">
+                        ${token.price.toFixed(2)}
+                    </Td>
 
-                        <Td fontSize="xs">
-                            ${(token.price * token.amount).toFixed(2)}
-                        </Td>
-                    </Tr>
-                );
-            });
+                    <Td fontSize="xs">
+                        ${(token.price * token.amount).toFixed(2)}
+                    </Td>
+                </Tr>
+            );
+        });
         return (
             <Table letterSpacing="wide" variant="simple" p="5" m="3">
                 <Thead
@@ -113,10 +124,12 @@ export default function FungiblesView(props: any) {
                     fontSize="small"
                     textTransform="uppercase"
                 >
-                    <Th>Token</Th>
-                    <Th># owned</Th>
-                    <Th>Price</Th>
-                    <Th>Total value</Th>
+                    <Tr>
+                        <Th>Token</Th>
+                        <Th># owned</Th>
+                        <Th>Price</Th>
+                        <Th>Total value</Th>
+                    </Tr>
                 </Thead>
                 <Tbody>{tokenView}</Tbody>
             </Table>
@@ -124,17 +137,15 @@ export default function FungiblesView(props: any) {
     };
 
     return (
-        <>
-            <Box>
-                {isLoadingWallet ? (
-                    <Spinner />
-                ) : (
-                    <>
-                        <NetWorthSection />
-                        <TokenSection />
-                    </>
-                )}
-            </Box>
-        </>
+        <Box>
+            {isLoadingWallet ? (
+                <Spinner />
+            ) : (
+                <>
+                    <NetWorthSection />
+                    <TokenSection />
+                </>
+            )}
+        </Box>
     );
 }
