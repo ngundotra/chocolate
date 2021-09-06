@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Image, ImageProps, Spinner } from '@chakra-ui/react';
 import { useState } from 'react';
 
-export function MetadataImage(props: ImageProps) {
+export function RedirectImage(props: ImageProps) {
     let [state, setState] = useState({
         isLoading: false,
         isLoaded: false,

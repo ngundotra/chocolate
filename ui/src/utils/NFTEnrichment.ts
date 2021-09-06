@@ -10,6 +10,13 @@ import { getAccountInfo } from './FetchAccount';
 import { decodeMetadata, getMetadata, Metadata } from './metaplex';
 import axios from 'axios';
 
+export type NftEnrichment = {
+    name: string,
+    symbol: string,
+    imageUrl: string,
+    updateAuthority: string,
+}
+
 export async function getNftMetadataAccountInfo(mintPubkey: PublicKey): Promise<AccountInfo<Buffer> | null> {
     let metadataPubkeyId = await getMetadata(mintPubkey.toString());
     let metadataPubkey = new PublicKey(metadataPubkeyId);
@@ -22,7 +29,7 @@ export async function getNftMetadataAccountInfo(mintPubkey: PublicKey): Promise<
     return null;
 }
 
-export async function getNFTs(publicKey: PublicKey): Promise<Array<any>> {
+export async function getNFTs(publicKey: PublicKey): Promise<Array<NftEnrichment>> {
     let connection = getConnection();
     let tokenList = await connection.getTokenAccountsByOwner(
         publicKey,
@@ -30,7 +37,7 @@ export async function getNFTs(publicKey: PublicKey): Promise<Array<any>> {
     );
     let tokens = tokenList.value;
 
-    var nfts: string[] = []; 
+    var nfts: NftEnrichment[] = []; 
 
     for(var i = 0; i < tokens.length; i++) {
         let tokenInfo = decodeTokenAccountInfo(tokens[i].account.data);
@@ -40,15 +47,17 @@ export async function getNFTs(publicKey: PublicKey): Promise<Array<any>> {
         if (typeof metadataAccountInfo === "undefined")
             continue;
 
-        // console.log("---------------------");
-        // console.log("Found possible NFT!");
         let onChainMetadata = decodeMetadata(metadataAccountInfo!.data);
-        // console.log(metadata.data.uri);
-        // console.log("---------------------");
         let uri = onChainMetadata.data.uri;
-        let response = await axios.get(uri);
-        // console.log(`enrichment: ${response.data.image}`);
-        nfts.push(response.data);
+        let uriResponse = await axios.get(uri);
+        var nftMetadata = uriResponse.data;
+        let enrichment = {
+            name: <string>nftMetadata.name,
+            symbol: <string>nftMetadata.symbol,
+            imageUrl: <string>nftMetadata.image,
+            updateAuthority: onChainMetadata.updateAuthority,
+        }
+        nfts.push(enrichment);
     }
     return(nfts);
 }

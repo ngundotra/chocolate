@@ -2,39 +2,28 @@ import * as React from "react";
 
 import {
     Box,
-    Grid,
-    HStack,
-    VStack,
     Table,
     Tr,
     Thead,
     Tbody,
     Td,
     Th,
-    Text,
-    Image,
-    background
 } from '@chakra-ui/react';
-import { MetadataImage } from "./MetadataImage";
+import { RedirectImage } from "./RedirectImage";
 import { NFT_PUBKEY } from "./utils/Constants";
-import { getMetadata } from "./utils/metaplex";
 import { useState } from "react";
-import { getNFTs } from "./utils/NFTEnrichment";
+import { NftEnrichment, getNFTs } from "./utils/NFTEnrichment";
 import './Loading.scss';
 
-type CollectibleState = {
-    symbol: string,
-    name: string,
-    url: string,
-};
 
-function renderTableData(collectibles: CollectibleState[]) {
+function renderTableData(collectibles: NftEnrichment[]) {
     return collectibles.map((collectible,index) => {
         return (
             <Tr key={index}>
                 <Td>{collectible.symbol}</Td>
                 <Td>{collectible.name}</Td>
-                <Td><MetadataImage src={collectible.url} /></Td>
+                <Td>{collectible.updateAuthority}</Td>
+                <Td><RedirectImage src={collectible.imageUrl} /></Td>
             </Tr>
         )
     });
@@ -50,9 +39,33 @@ function renderDummyData() {
                 <Box width={300} height={100} className={'loading-element'} backgroundColor="purple.300" />
             </Td>
             <Td>
+                <Box width={300} height={100} className={'loading-element'} backgroundColor="purple.300" />
+            </Td>
+            <Td>
                 <Box width={100} height={100} className={'loading-element'} />
             </Td>
         </Tr>
+    )
+}
+
+type TableSkeletonProps = {
+    rows: JSX.Element[]
+}
+function tableSkeleton(props: TableSkeletonProps) {
+    return ( 
+        <Table>
+            <Thead>
+                <Tr>
+                    <Th>Symbol</Th>
+                    <Th>Name</Th>
+                    <Th>Update Authority</Th>
+                    <Th>Image</Th>
+                </Tr>
+            </Thead>
+            <Tbody>
+                {props.rows} 
+            </Tbody>
+        </Table>
     )
 }
 
@@ -60,7 +73,7 @@ export function CollectiblesView() {
     const initState = {
         isLoading: false,
         isLoaded: false,
-        collectibles: Array<CollectibleState>(0),
+        collectibles: Array<NftEnrichment>(0),
     };
     const [state, setState] = useState(initState);
 
@@ -73,12 +86,7 @@ export function CollectiblesView() {
         });
 
         getNFTs(NFT_PUBKEY).then(
-            (nfts) => {
-                let collectibles = nfts.map((metadata) => { return {
-                    name: metadata.name,
-                    symbol: metadata.symbol,
-                    url: metadata.image.toString()
-                }});
+            (collectibles) => {
                 console.log("should have loaded");
                 setState({
                     isLoaded: true,
@@ -93,33 +101,7 @@ export function CollectiblesView() {
     }
 
     if (state.isLoading)
-        return (
-            <Table>
-                <Thead>
-                    <Tr>
-                        <Th>Symbol</Th>
-                        <Th>Name</Th>
-                        <Th>Image</Th>
-                    </Tr>
-                </Thead>
-                <Tbody>
-                    {renderDummyData()} 
-                </Tbody>
-            </Table>
-        )
+        return tableSkeleton({rows: [renderDummyData()]})
 
-    return (
-        <Table>
-            <Thead>
-                <Tr>
-                    <Th>Symbol</Th>
-                    <Th>Name</Th>
-                    <Th>Image</Th>
-                </Tr>
-            </Thead>
-            <Tbody>
-                {renderTableData(state.collectibles)} 
-            </Tbody>
-        </Table>
-    )
+    return tableSkeleton({rows: renderTableData(state.collectibles)})
 }
