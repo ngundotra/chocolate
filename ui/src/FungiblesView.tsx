@@ -30,8 +30,13 @@ export default function FungiblesView(props: any) {
      * Load wallet data on page load
      */
     React.useEffect(() => {
-        getWalletData(props.pubkey);
-    }, [props.pubkey]);
+        try {
+            let pubKey = new PublicKey(props.addr);
+            getWalletData(pubKey);
+        } catch {
+            console.error("Invalid public key");
+        }
+    }, [props.addr]);
 
     /**
      *  Get wallet data and set loading variables
@@ -79,44 +84,58 @@ export default function FungiblesView(props: any) {
      */
     const TokenSection = () => {
         // Create row for each token.
-        const tokenView = walletTokens.map((token) => {
-            return (
-                <Tr
-                    fontWeight="semibold"
-                    textTransform="uppercase"
-                    key={token.name}
-                >
-                    <Td>
-                        <LinkBox d="flex" alignItems="center" w="fit-content">
-                            <Image
-                                maxW="50px"
-                                src={token.image}
-                                alt={token.name}
-                            />
-                            <LinkOverlay
-                                href={token.website}
-                                isExternal
-                                ml="15px"
-                                maxW="250px"
+        let tokenView;
+
+        if (walletTokens.length > 0) {
+            tokenView = walletTokens.map((token) => {
+                return (
+                    <Tr
+                        fontWeight="semibold"
+                        textTransform="uppercase"
+                        key={token.name}
+                    >
+                        <Td>
+                            <LinkBox
+                                d="flex"
+                                alignItems="center"
+                                w="fit-content"
                             >
-                                {token.name}
-                            </LinkOverlay>
-                        </LinkBox>
-                    </Td>
+                                <Image
+                                    maxW="50px"
+                                    src={token.image}
+                                    alt={token.name}
+                                />
+                                <LinkOverlay
+                                    href={token.website}
+                                    isExternal
+                                    ml="15px"
+                                    maxW="250px"
+                                >
+                                    {token.name}
+                                </LinkOverlay>
+                            </LinkBox>
+                        </Td>
 
-                    <Td color="gray.500" fontSize="xs">
-                        {token.amount}
-                    </Td>
-                    <Td color="gray.500" fontSize="xs">
-                        ${token.price.toFixed(2)}
-                    </Td>
+                        <Td color="gray.500" fontSize="xs">
+                            {token.amount}
+                        </Td>
+                        <Td color="gray.500" fontSize="xs">
+                            ${token.price.toFixed(2)}
+                        </Td>
 
-                    <Td fontSize="xs">
-                        ${(token.price * token.amount).toFixed(2)}
-                    </Td>
+                        <Td fontSize="xs">
+                            ${(token.price * token.amount).toFixed(2)}
+                        </Td>
+                    </Tr>
+                );
+            });
+        } else {
+            tokenView = (
+                <Tr>
+                    <Td fontSize="small">No fungible tokens</Td>
                 </Tr>
             );
-        });
+        }
         return (
             <Table letterSpacing="wide" variant="simple" p="5" m="3">
                 <Thead
