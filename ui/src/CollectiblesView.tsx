@@ -1,86 +1,56 @@
-import * as React from "react";
-
-import {
-    Box,
-    Grid,
-    HStack,
-    VStack,
-    Table,
-    Tr,
-    Thead,
-    Tbody,
-    Td,
-    Th,
-    Text,
-    Image
-} from '@chakra-ui/react';
+import { SimpleGrid, Spinner, Box } from "@chakra-ui/react";
 import { MetadataImage } from "./MetadataImage";
-import { NFT_PUBKEY } from "./utils/Constants";
-import { getMetadata } from "./utils/metaplex";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getNFTs } from "./utils/NFTEnrichment";
+import { PublicKey } from "@solana/web3.js";
 
 type CollectibleState = {
-    url: string,
+    url: string;
 };
 
+const CARD_SIZE = 200;
+
 function renderTableData(collectibles: CollectibleState[]) {
-    return collectibles.map((collectible,index) => {
+    return collectibles.map((collectible, index) => {
         return (
-            <Tr key={index}>
-                <Td>{collectible.url}</Td>
-                <Td><MetadataImage src={collectible.url} /></Td>
-            </Tr>
-        )
+            <MetadataImage key={index} maxW={CARD_SIZE} src={collectible.url} />
+        );
     });
 }
 
-export function CollectiblesView() {
-    const initState = {
-        isLoading: false,
-        isLoaded: false,
-        collectibles: [
-            { url: "https://arweave.net/SICKW7qkU5_WZl7wZNbWc1FmBbqMJm79hfaf-AQ_NrE" },
-        ]
-    };
-    const [appState, setAppState] = useState(initState);//useState(new Array<CollectibleState>(0));
+export function CollectiblesView(props: any) {
+    const [isLoading, setIsLoading] = useState(false);
+    let temp: any[] = [];
+    const [collectibles, setCollectibles] = useState(temp);
 
-    if (!appState.isLoading && !appState.isLoaded)
-    {
-        setAppState({
-            isLoading: true,
-            isLoaded: false,
-            collectibles: appState.collectibles,
-        });
-
-        getNFTs(NFT_PUBKEY).then(
-            (nfts) => {
-                let collectibles = nfts.map((imageUrl) => { return {url: imageUrl.toString()} });
-                setAppState({
-                    isLoaded: true,
-                    isLoading: false,
-                    collectibles: collectibles,
+    useEffect(() => {
+        setCollectibles([]);
+        async function getCollectibles() {
+            setIsLoading(true);
+            try {
+                let pubKey = new PublicKey(props.addr);
+                let nfts = await getNFTs(pubKey);
+                let collectibles = nfts.map((imageUrl) => {
+                    return { url: imageUrl.toString() };
                 });
-            },
-            (reason) => {
-                console.log("Could not get NFTs for pubkey provided: ", reason);
+                setCollectibles(collectibles);
+            } catch {
+                console.error("Could not get NFTs for pubkey");
             }
-        )
-    }
-
-    console.log("[appstate] ", appState);
+            setIsLoading(false);
+        }
+        getCollectibles();
+    }, [props.addr]);
 
     return (
-        <Table>
-            <Thead>
-                <Tr>
-                    <Th>Url</Th>
-                    <Th>Image</Th>
-                </Tr>
-            </Thead>
-            <Tbody>
-                {renderTableData(appState.collectibles)}
-            </Tbody>
-        </Table>
-    )
+        <Box>
+            {isLoading ? (
+                <Spinner />
+            ) : (
+                <SimpleGrid minChildWidth={CARD_SIZE} spacing="40px" p="40px">
+                    {renderTableData(collectibles)}
+                </SimpleGrid>
+            )}
+        </Box>
+    );
 }
