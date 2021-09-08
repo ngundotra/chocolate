@@ -10,12 +10,18 @@ import { getAccountInfo } from './FetchAccount';
 import { decodeMetadata, getMetadata, Metadata } from './metaplex';
 import axios from 'axios';
 
-export async function getNftMetadataAccountInfo(mintPubkey: PublicKey): Promise<AccountInfo<Buffer>> {
+export type NftEnrichment = {
+    name: string,
+    symbol: string,
+    imageUrl: string,
+    updateAuthority: string,
+}
+
+export async function getNftMetadataAccountInfo(mintPubkey: PublicKey): Promise<AccountInfo<Buffer> | null> {
     let metadataPubkeyId = await getMetadata(mintPubkey.toString());
     let metadataPubkey = new PublicKey(metadataPubkeyId);
 
-    if (typeof metadataPubkey !== "undefined")
-    {
+    if (typeof metadataPubkey !== "undefined") {
         let accountInfo = await getAccountInfo(metadataPubkey, false);
         return accountInfo;
     };
@@ -23,7 +29,7 @@ export async function getNftMetadataAccountInfo(mintPubkey: PublicKey): Promise<
     return null;
 }
 
-export async function getNFTs(publicKey: PublicKey): Promise<Array<String>> {
+export async function getNFTs(publicKey: PublicKey): Promise<Array<NftEnrichment>> {
     let connection = getConnection();
     let tokenList = await connection.getTokenAccountsByOwner(
         publicKey,
@@ -31,34 +37,40 @@ export async function getNFTs(publicKey: PublicKey): Promise<Array<String>> {
     );
     let tokens = tokenList.value;
 
-    var nfts: string[] = []; 
+    var nfts: NftEnrichment[] = []; 
 
     for(var i = 0; i < tokens.length; i++) {
         let tokenInfo = decodeTokenAccountInfo(tokens[i].account.data);
-        let mintInfo = await getMintInfo(new PublicKey(tokenInfo.mint));
+        // let mintInfo = await getMintInfo(new PublicKey(tokenInfo.mint));
         
         let metadataAccountInfo = await getNftMetadataAccountInfo(new PublicKey(tokenInfo.mint));
-        // console.log("---------------------");
-        // console.log("Found possible NFT!");
-        let metadata = decodeMetadata(metadataAccountInfo.data);
-        // console.log(metadata.data.uri);
-        // console.log("---------------------");
-        nfts.push(metadata.data.uri);
+        if (typeof metadataAccountInfo === "undefined")
+            continue;
+
+        try {
+            let onChainMetadata = decodeMetadata(metadataAccountInfo!.data);
+            let uri = onChainMetadata.data.uri;
+            let uriResponse = await axios.get(uri);
+            var nftMetadata = uriResponse.data;
+            let enrichment = {
+                name: <string>nftMetadata.name,
+                symbol: <string>nftMetadata.symbol,
+                imageUrl: <string>nftMetadata.image,
+                updateAuthority: onChainMetadata.updateAuthority,
+            }
+            nfts.push(enrichment);
+        } catch (e) {
+            console.error("NFT enrichment failed for token: ", tokenInfo.address, " reason: ", e);
+        }
     }
     return(nfts);
 }
 
 getNFTs(NFT_PUBKEY).then(
-    (value: string[]) => {
+    (value) => {
         value.forEach(
-            (uri) => {
-                axios.get(uri).then(
-                    (response) => {
-                        // console.log('\n');
-                        // console.log(`${response.data.name} <${response.data.symbol}>`);
-                        console.log(response.data.image ?? "no image");
-                    }
-                )
+            (imageUrl) => {
+                console.log(imageUrl); 
             }
         )
     } 
