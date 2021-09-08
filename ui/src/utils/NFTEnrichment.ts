@@ -47,17 +47,21 @@ export async function getNFTs(publicKey: PublicKey): Promise<Array<NftEnrichment
         if (typeof metadataAccountInfo === "undefined")
             continue;
 
-        let onChainMetadata = decodeMetadata(metadataAccountInfo!.data);
-        let uri = onChainMetadata.data.uri;
-        let uriResponse = await axios.get(uri);
-        var nftMetadata = uriResponse.data;
-        let enrichment = {
-            name: <string>nftMetadata.name,
-            symbol: <string>nftMetadata.symbol,
-            imageUrl: <string>nftMetadata.image,
-            updateAuthority: onChainMetadata.updateAuthority,
+        try {
+            let onChainMetadata = decodeMetadata(metadataAccountInfo!.data);
+            let uri = onChainMetadata.data.uri;
+            let uriResponse = await axios.get(uri);
+            var nftMetadata = uriResponse.data;
+            let enrichment = {
+                name: <string>nftMetadata.name,
+                symbol: <string>nftMetadata.symbol,
+                imageUrl: <string>nftMetadata.image,
+                updateAuthority: onChainMetadata.updateAuthority,
+            }
+            nfts.push(enrichment);
+        } catch (e) {
+            console.error("NFT enrichment failed for token: ", tokenInfo.address, " reason: ", e);
         }
-        nfts.push(enrichment);
     }
     return(nfts);
 }

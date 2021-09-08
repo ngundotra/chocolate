@@ -1,107 +1,47 @@
+import { SimpleGrid, Spinner, Box } from "@chakra-ui/react";
+import { CARD_SIZE, IndexedCollectible, MetadataImage } from "./MetadataImage";
 import * as React from "react";
-
-import {
-    Box,
-    Table,
-    Tr,
-    Thead,
-    Tbody,
-    Td,
-    Th,
-} from '@chakra-ui/react';
-import { RedirectImage } from "./RedirectImage";
-import { NFT_PUBKEY } from "./utils/Constants";
-import { useState } from "react";
-import { NftEnrichment, getNFTs } from "./utils/NFTEnrichment";
-import './Loading.scss';
-
+import { getNFTs, NftEnrichment } from "./utils/NFTEnrichment";
+import { PublicKey } from "@solana/web3.js";
 
 function renderTableData(collectibles: NftEnrichment[]) {
-    return collectibles.map((collectible,index) => {
+    return collectibles.map((collectible, index) => {
         return (
-            <Tr key={index}>
-                <Td>{collectible.symbol}</Td>
-                <Td>{collectible.name}</Td>
-                <Td>{collectible.updateAuthority}</Td>
-                <Td><RedirectImage src={collectible.imageUrl} /></Td>
-            </Tr>
-        )
+            <MetadataImage key={index} collectible={collectible} />
+        );
     });
 }
 
-function renderDummyData() {
-    return (
-        <Tr>
-            <Td>
-                <Box width={300} height={100} className={'loading-element'} backgroundColor="purple.300" />
-            </Td>
-            <Td>
-                <Box width={300} height={100} className={'loading-element'} backgroundColor="purple.300" />
-            </Td>
-            <Td>
-                <Box width={300} height={100} className={'loading-element'} backgroundColor="purple.300" />
-            </Td>
-            <Td>
-                <Box width={100} height={100} className={'loading-element'} />
-            </Td>
-        </Tr>
-    )
-}
+export function CollectiblesView(props: any) {
+    const [isLoading, setIsLoading] = React.useState(false);
+    let temp: any[] = [];
+    const [collectibles, setCollectibles] = React.useState(temp);
 
-type TableSkeletonProps = {
-    rows: JSX.Element[]
-}
-function tableSkeleton(props: TableSkeletonProps) {
-    return ( 
-        <Table>
-            <Thead>
-                <Tr>
-                    <Th>Symbol</Th>
-                    <Th>Name</Th>
-                    <Th>Update Authority</Th>
-                    <Th>Image</Th>
-                </Tr>
-            </Thead>
-            <Tbody>
-                {props.rows} 
-            </Tbody>
-        </Table>
-    )
-}
-
-export function CollectiblesView() {
-    const initState = {
-        isLoading: false,
-        isLoaded: false,
-        collectibles: Array<NftEnrichment>(0),
-    };
-    const [state, setState] = useState(initState);
-
-    if (!state.isLoading && !state.isLoaded)
-    {
-        setState({
-            isLoading: true,
-            isLoaded: false,
-            collectibles: state.collectibles,
-        });
-
-        getNFTs(NFT_PUBKEY).then(
-            (collectibles) => {
-                console.log("should have loaded");
-                setState({
-                    isLoaded: true,
-                    isLoading: false,
-                    collectibles: collectibles,
-                });
-            },
-            (reason) => {
-                console.log("Could not get NFTs for pubkey provided: ", reason);
+    React.useEffect(() => {
+        setCollectibles([]);
+        async function getCollectibles() {
+            setIsLoading(true);
+            try {
+                let pubKey = new PublicKey(props.addr);
+                let collectibles = await getNFTs(pubKey);
+                setCollectibles(collectibles);
+            } catch {
+                console.error("Could not get NFTs for pubkey");
             }
-        )
-    }
+            setIsLoading(false);
+        }
+        getCollectibles();
+    }, [props.addr]);
 
-    if (state.isLoading)
-        return tableSkeleton({rows: [renderDummyData()]})
-
-    return tableSkeleton({rows: renderTableData(state.collectibles)})
+    return (
+        <Box>
+            {isLoading ? (
+                <Spinner />
+            ) : (
+                <SimpleGrid minChildWidth={CARD_SIZE} spacing="40px" p="40px">
+                    {renderTableData(collectibles)}
+                </SimpleGrid>
+            )}
+        </Box>
+    );
 }
