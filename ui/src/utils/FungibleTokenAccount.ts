@@ -1,5 +1,5 @@
 import { getConnection } from "./Connection";
-import { u64, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { u64, TOKEN_PROGRAM_ID, Token } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
 import { decodeTokenAccountInfo } from "./Token";
 import { getTokenMap, getTokenName } from "./FungibleTokenRegistry";
@@ -9,6 +9,14 @@ const CoinGecko = require("coingecko-api");
 // Initiate the CoinGecko API Client
 const CoinGeckoClient = new CoinGecko();
 
+export type TokenEnrichment = {
+    name: string,
+    amount: number,
+    price: number | undefined,
+    website: string | undefined,
+    image: string | undefined,
+};
+
 /**
  * Get all fungible tokens for given account and return tokens with
  * relevant data.
@@ -16,15 +24,18 @@ const CoinGeckoClient = new CoinGecko();
  * @param accountAddr PublicKey of target token account
  * @returns Wallet data wrapped in promise
  */
-export async function getFungibleTokens(accountAddr: PublicKey) {
+export async function getFungibleTokens(accountAddr: PublicKey): Promise<TokenEnrichment[]> {
     // Connect to chain
     let connection = getConnection();
+
     // Get tokens in account
     let tokenRes;
+    let nativeSolBalance;
     try {
         tokenRes = await connection.getTokenAccountsByOwner(accountAddr, {
             programId: TOKEN_PROGRAM_ID,
         });
+        nativeSolBalance = await connection.getBalance(accountAddr);
     } catch {
         throw new Error("Couldn't load user data");
     }
@@ -34,12 +45,20 @@ export async function getFungibleTokens(accountAddr: PublicKey) {
     // Initialize CoinGecko map and wallet data
     let coinMap = await getCoinMap();
     let tokenMap = await getTokenMap();
-    let tokenArr: any[] = [];
-    let walletData = {
-        addr: accountAddr.toString(),
-        netWorth: 0,
-        tokens: tokenArr,
-    };
+    var tokenArr: TokenEnrichment[] = [];
+
+    // add native sol token
+    let nativeSolPrice = await getTokenPriceById("solana");
+    console.log("native sol price: ", nativeSolPrice);
+
+    let nativeSolToken: TokenEnrichment = {
+        name: "SOL",
+        amount: nativeSolBalance,
+        price: nativeSolPrice,
+        website: undefined,
+        image: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png",
+    }
+    tokenArr.push(nativeSolToken);
 
     // Iterate through all tokens in account
     for (let i = 0; i < tokens.length; i++) {
@@ -52,7 +71,6 @@ export async function getFungibleTokens(accountAddr: PublicKey) {
         // Continue if token exists in registry
         if (tokenName != null && tokenMap != null) {
             let mintInfo = tokenMap[mintAddr];
-
             let amount = getTokenAmount(tokenInfo, mintInfo);
 
             // Filter out tokens with zero quantity
@@ -60,7 +78,7 @@ export async function getFungibleTokens(accountAddr: PublicKey) {
                 let price = await getTokenPrice(mintInfo, coinMap);
 
                 // Add relevant tokendata to wallet data
-                let newToken = {
+                let newToken: TokenEnrichment = {
                     name: tokenName,
                     amount: amount,
                     price: price,
@@ -70,15 +88,11 @@ export async function getFungibleTokens(accountAddr: PublicKey) {
                         mintInfo.extensions.website,
                     image: mintInfo && mintInfo.logoURI,
                 };
-                walletData.tokens.push(newToken);
-
-                // Update wallet total net worth
-                let value = amount * price;
-                walletData.netWorth += value;
+                tokenArr.push(newToken);
             }
         }
     }
-    return walletData;
+    return tokenArr;
 }
 
 /**
@@ -116,9 +130,10 @@ async function getTokenPriceById(tokenId: string) {
             community_data: false,
             localization: false,
         });
+        console.log(tokenId, response.data);
         return response.data.market_data.current_price.usd;
-    } catch {
-        throw new Error("Couldn't load data from CoinGecko");
+    } catch (e) {
+        throw new Error(`Couldn't load data from CoinGecko, reason: ${e.toString()}`);
     }
 }
 

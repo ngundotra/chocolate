@@ -13,8 +13,12 @@ import {
     LinkBox,
     LinkOverlay,
 } from "@chakra-ui/react";
-import { getFungibleTokens } from "./utils/FungibleTokenAccount";
+import { getFungibleTokens, TokenEnrichment } from "./utils/FungibleTokenAccount";
 import { PublicKey } from "@solana/web3.js";
+
+function numberWithCommas(x: string): string {
+    return x.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
 
 /**
  * Display fungible tokens and total value
@@ -43,11 +47,13 @@ export default function FungiblesView(props: any) {
      * */
     async function getWalletData(addr: PublicKey) {
         setIsLoadingWallet(true);
-        let data = await getFungibleTokens(addr);
-        let tokens: any[] = data.tokens;
+        let tokens: TokenEnrichment[] = await getFungibleTokens(addr);
+
+        let tokenNotional = tokens.map((token) => (token.price ?? 0) * token.amount);
+        let netNotional = tokenNotional.reduce((agg, curr) => agg + curr);
 
         setWalletTokens(tokens);
-        setWalletvalue(data.netWorth);
+        setWalletvalue(netNotional);
         setIsLoadingWallet(false);
     }
 
@@ -73,7 +79,7 @@ export default function FungiblesView(props: any) {
                 </Text>
                 <Text fontWeight="semibold" ml="3" fontSize="lg">
                     {"$"}
-                    {walletValue.toFixed(2)}
+                    {numberWithCommas(walletValue.toFixed(2))}
                 </Text>
             </Box>
         );
@@ -120,11 +126,11 @@ export default function FungiblesView(props: any) {
                             {token.amount}
                         </Td>
                         <Td color="gray.500" fontSize="xs">
-                            ${token.price.toFixed(2)}
+                            ${numberWithCommas(token.price.toFixed(2))}
                         </Td>
 
                         <Td fontSize="xs">
-                            ${(token.price * token.amount).toFixed(2)}
+                            ${numberWithCommas((token.price * token.amount).toFixed(2))}
                         </Td>
                     </Tr>
                 );
