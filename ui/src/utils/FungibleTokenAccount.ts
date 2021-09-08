@@ -1,6 +1,6 @@
 import { getConnection } from "./Connection";
 import { u64, TOKEN_PROGRAM_ID, Token } from "@solana/spl-token";
-import { PublicKey } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { decodeTokenAccountInfo } from "./Token";
 import { getTokenMap, getTokenName } from "./FungibleTokenRegistry";
 import { TokenInfo } from "@solana/spl-token-registry";
@@ -53,7 +53,7 @@ export async function getFungibleTokens(accountAddr: PublicKey): Promise<TokenEn
 
     let nativeSolToken: TokenEnrichment = {
         name: "SOL",
-        amount: nativeSolBalance,
+        amount: nativeSolBalance / LAMPORTS_PER_SOL,
         price: nativeSolPrice,
         website: undefined,
         image: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png",
