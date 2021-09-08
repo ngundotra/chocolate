@@ -1,19 +1,38 @@
 import * as React from "react";
 
-import { Grid } from "@chakra-ui/react";
+import { Box, Grid } from "@chakra-ui/react";
 
 import { CollectiblesView } from "./CollectiblesView";
 import FungiblesView from "./FungiblesView";
 import { NFT_ADDR } from "./utils/Constants";
+import { useParams } from 'react-router-dom';
 import Header from "./Header";
 
-export function ProfilePage() {
-    const [addr, setAddr] = React.useState(NFT_ADDR.toString());
+export type ProfilePageParams = {
+    id: string,
+};
+
+export type ProfilePageProps = {
+    useRandomAddress: boolean,
+}
+
+export function ProfilePage(props: ProfilePageProps) {
+    let address: string;
+    const { id } = useParams<ProfilePageParams>();
+    if (props.useRandomAddress) {
+        address = NFT_ADDR;
+    } else {
+        address = id;
+    }
+    const [addr, setAddr] = React.useState(address);
+
     return (
-        <Grid minH="100vh" p="40px">
-            <Header addr={addr} updateAddr={setAddr} />
-            <FungiblesView addr={addr} />
-            <CollectiblesView addr={addr} />
-        </Grid>
+        // <Box textAlign="center" fontSize="xl">
+            <Grid minH="100vh" p="40px">
+                <Header addr={addr} updateAddr={setAddr} />
+                <FungiblesView addr={addr} />
+                <CollectiblesView addr={addr} />
+            </Grid>
+        // </Box>
     );
 }
