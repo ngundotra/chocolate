@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import * as React from "react";
 import {
     Box,
     InputGroup,
@@ -8,17 +8,30 @@ import {
     Text,
     Spacer,
 } from "@chakra-ui/react";
+import { Redirect } from "react-router";
 
 export default function Header(props: any) {
-    const [addr, setAddr] = useState("");
+    const [addr, setAddr] = React.useState("");
+    const [doRedirect, setDoRedirect] = React.useState(false);
+    const givenAddr = props.addr;
 
-    useEffect(() => {
+    React.useEffect(() => {
         setAddr(props.addr);
     }, [props.addr]);
 
     const handleClick = () => {
         props.updateAddr(addr);
+        if (addr !== givenAddr) {
+            console.log("Redirect imminent!");
+            setDoRedirect(true);
+        }
     };
+
+    if (doRedirect) {
+        return (
+            <Redirect to={`/profile/${addr}`}/>
+        )
+    }
 
     return (
         <Box d="flex" alignItems="center" px="40px">

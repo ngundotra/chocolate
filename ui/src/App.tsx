@@ -1,8 +1,8 @@
 import * as React from "react"
 import {
   ChakraProvider,
+  Box,
   theme,
-  Switch,
 } from "@chakra-ui/react"
 import {
   ProfilePage
@@ -10,15 +10,25 @@ import {
 // import * as ReactRouter from 'react-router-dom';
 import {
   BrowserRouter as Router,
-  Route
+  Route,
+  Switch,
+  Redirect,
 } from 'react-router-dom';
-// import { BrowserRouter as Router, Route } from 'react-router-dom';
 // import { ColorModeSwitcher } from "./ColorModeSwitcher"
 
 //{/* <ColorModeSwitcher justifySelf="flex-end" /> */}
 
 export const App = () => (
   <ChakraProvider theme={theme}>
-    <ProfilePage useRandomAddress={true} />
+    <Router> 
+      <Switch>
+        <Route exact={true} path="/" >
+          <Redirect to="/profile/9fETpNpWQY2jhXXd8WEhfaLVdNsvBAT4J2gPHqyZKw7H" />
+        </Route>
+        <Route path="/profile/:address">
+          <ProfilePage />
+        </Route>
+      </Switch>
+    </Router>
   </ChakraProvider>
 )

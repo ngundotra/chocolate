@@ -12,17 +12,13 @@ export type ProfilePageParams = {
     id: string,
 };
 
-export type ProfilePageProps = {
-    useRandomAddress: boolean,
-}
+type UrlParams = {
+    address: string,
+} 
 
-export function ProfilePage(props: ProfilePageProps) {
-    let address: string;
-    if (props.useRandomAddress) {
-        address = NFT_ADDR;
-    } else {
-        address = ADDR; 
-    }
+export function ProfilePage() {
+    let { address } = useParams<UrlParams>();
+    // todo(ngundotra): setup isLoading/needsRedirect/redirectAddr state
     const [addr, setAddr] = React.useState(address);
 
     return (
