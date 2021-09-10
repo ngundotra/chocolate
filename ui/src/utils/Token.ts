@@ -31,7 +31,6 @@ export function getTokenAmount(tokenInfo: AccountInfo, decimals: number | null) 
         .fromBuffer(tokenInfo.amount as unknown as Buffer)
         .toNumber();
     let output = decimals ? amount / 10 ** decimals! : amount;
-    console.log("provided decimals: ", decimals, " amount: ", amount, " output: ", output);
     return output;
 }
 

@@ -64,7 +64,7 @@ export async function getFungibleTokens(accountAddr: PublicKey): Promise<TokenEn
     for (let i = 0; i < tokens.length; i++) {
         let currToken = tokens[i];
         let tokenInfo = decodeTokenAccountInfo(currToken.account.data);
-        let mintAddr = new PublicKey(tokenInfo.mint).toString();
+        let mintAddr = tokenInfo.mint.toString();
 
         let tokenName = await getTokenName(mintAddr);
 

@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { Box, Grid } from "@chakra-ui/react";
+import { Box, Grid, Spacer } from "@chakra-ui/react";
 
 import { CollectiblesView } from "./CollectiblesView";
 import FungiblesView from "./FungiblesView";
@@ -29,7 +29,7 @@ export function ProfilePage(props: ProfilePageProps) {
         <Box textAlign="center" fontSize="xl">
             <Grid minH="100vh" p="40px">
                 <Header addr={addr} updateAddr={setAddr} />
-                <FungiblesView addr={addr} />
+                <FungiblesView addr={addr}/>
                 <CollectiblesView addr={addr} />
             </Grid>
         </Box>

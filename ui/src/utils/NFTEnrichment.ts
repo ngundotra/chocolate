@@ -46,12 +46,8 @@ export async function getNFTs(publicKey: PublicKey): Promise<Array<NftEnrichment
         let mintInfo = await getMintInfo(new PublicKey(tokenInfo.mint));
 
         let amount = getTokenAmount(tokenInfo, mintInfo.decimals); 
-        console.log(`Token Addr: ${tokenInfo.address}: ${tokenInfo}`);
-        console.log(`Mint Addr: ${mintAddr.toString()}: ${tokenInfo}`);
-        // let tokenAddr = new PublicKey(tokenInfo.address);
-        // console.log(`${tokenAddr.toString()} Token amount: ${amount}`);
-        // if (tokenInfo.amount?.toNumber() == 0)
-        //     continue;
+        if (amount == 0)
+            continue;
         
         let metadataAccountInfo = await getNftMetadataAccountInfo(mintAddr);
         if (typeof metadataAccountInfo === "undefined")
@@ -73,6 +69,7 @@ export async function getNFTs(publicKey: PublicKey): Promise<Array<NftEnrichment
             console.error("NFT enrichment failed for token: ", tokenInfo.address, " reason: ", e);
         }
     }
+    console.log(nfts);
     return(nfts);
 }
 
