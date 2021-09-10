@@ -2,12 +2,12 @@ import {
     PublicKey,
     AccountInfo,
 } from '@solana/web3.js';
-import { u64, Token, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import { decodeTokenAccountInfo, getMintInfo } from './Token';
+import { u64, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { decodeTokenAccountInfo, getMintInfo, getTokenAmount } from './Token';
 import { NFT_PUBKEY } from './Constants';
 import { getConnection } from './Connection';
 import { getAccountInfo } from './FetchAccount';
-import { decodeMetadata, getMetadata, Metadata } from './metaplex';
+import { decodeMetadata, getMetadata } from './metaplex';
 import axios from 'axios';
 
 export type NftEnrichment = {
@@ -41,9 +41,19 @@ export async function getNFTs(publicKey: PublicKey): Promise<Array<NftEnrichment
 
     for(var i = 0; i < tokens.length; i++) {
         let tokenInfo = decodeTokenAccountInfo(tokens[i].account.data);
-        // let mintInfo = await getMintInfo(new PublicKey(tokenInfo.mint));
+
+        let mintAddr = new PublicKey(tokenInfo.mint);
+        let mintInfo = await getMintInfo(new PublicKey(tokenInfo.mint));
+
+        let amount = getTokenAmount(tokenInfo, mintInfo.decimals); 
+        console.log(`Token Addr: ${tokenInfo.address}: ${tokenInfo}`);
+        console.log(`Mint Addr: ${mintAddr.toString()}: ${tokenInfo}`);
+        // let tokenAddr = new PublicKey(tokenInfo.address);
+        // console.log(`${tokenAddr.toString()} Token amount: ${amount}`);
+        // if (tokenInfo.amount?.toNumber() == 0)
+        //     continue;
         
-        let metadataAccountInfo = await getNftMetadataAccountInfo(new PublicKey(tokenInfo.mint));
+        let metadataAccountInfo = await getNftMetadataAccountInfo(mintAddr);
         if (typeof metadataAccountInfo === "undefined")
             continue;
 

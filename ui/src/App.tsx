@@ -19,15 +19,6 @@ import {
 
 export const App = () => (
   <ChakraProvider theme={theme}>
-    <Router>
-      <Switch>
-        <Route exact={true} path="/">
-          <ProfilePage useRandomAddress={true} />
-        </Route>
-        <Route path="/profile/:id">
-          <ProfilePage useRandomAddress={false} />
-        </Route>
-      </Switch>
-    </Router>
+    <ProfilePage useRandomAddress={true} />
   </ChakraProvider>
 )

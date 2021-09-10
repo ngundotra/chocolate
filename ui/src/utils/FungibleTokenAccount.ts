@@ -1,7 +1,7 @@
 import { getConnection } from "./Connection";
 import { u64, TOKEN_PROGRAM_ID, Token } from "@solana/spl-token";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
-import { decodeTokenAccountInfo } from "./Token";
+import { decodeTokenAccountInfo, getTokenAmount } from "./Token";
 import { getTokenMap, getTokenName } from "./FungibleTokenRegistry";
 import { TokenInfo } from "@solana/spl-token-registry";
 const CoinGecko = require("coingecko-api");
@@ -71,7 +71,7 @@ export async function getFungibleTokens(accountAddr: PublicKey): Promise<TokenEn
         // Continue if token exists in registry
         if (tokenName != null && tokenMap != null) {
             let mintInfo = tokenMap[mintAddr];
-            let amount = getTokenAmount(tokenInfo, mintInfo);
+            let amount = getTokenAmount(tokenInfo, mintInfo.decimals);
 
             // Filter out tokens with zero quantity
             if (amount > 0) {
@@ -93,24 +93,6 @@ export async function getFungibleTokens(accountAddr: PublicKey): Promise<TokenEn
         }
     }
     return tokenArr;
-}
-
-/**
- * Parse and return amount of a given token in an account.
- *
- * @param tokenInfo This can be found via decodeTokenAccountInfo()
- * @param mintInfo This can be found via getTokenInfo()
- * @returns Amount of tokens in account
- */
-function getTokenAmount(tokenInfo: any, mintInfo: TokenInfo | null) {
-    if (mintInfo == null) {
-        return 0;
-    }
-    let amount = u64
-        .fromBuffer(tokenInfo.amount as unknown as Buffer)
-        .toNumber();
-    let decimals = mintInfo.decimals;
-    return amount / 10 ** decimals;
 }
 
 /**
