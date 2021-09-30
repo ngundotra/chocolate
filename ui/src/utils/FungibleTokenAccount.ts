@@ -2,7 +2,7 @@ import { getConnection } from "./Connection";
 import { u64, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
 import { decodeTokenAccountInfo } from "./Token";
-import { getTokenMap, getTokenName } from "./FungibleTokenRegistry";
+import { getTokenName } from "./FungibleTokenRegistry";
 import { TokenInfo } from "@solana/spl-token-registry";
 const CoinGecko = require("coingecko-api");
 
@@ -16,7 +16,9 @@ const CoinGeckoClient = new CoinGecko();
  * @param accountAddr PublicKey of target token account
  * @returns Wallet data wrapped in promise
  */
-export async function getFungibleTokens(accountAddr: PublicKey) {
+export async function getFungibleTokens(accountAddr: PublicKey, tokenMap: {
+    [address: string]: TokenInfo;
+} | undefined) {
     // Connect to chain
     let connection = getConnection();
     // Get tokens in account
@@ -33,7 +35,6 @@ export async function getFungibleTokens(accountAddr: PublicKey) {
 
     // Initialize CoinGecko map and wallet data
     let coinMap = await getCoinMap();
-    let tokenMap = await getTokenMap();
     let tokenArr: any[] = [];
     let walletData = {
         addr: accountAddr.toString(),
