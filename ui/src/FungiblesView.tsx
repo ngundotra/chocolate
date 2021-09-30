@@ -14,7 +14,9 @@ import {
     LinkOverlay,
 } from "@chakra-ui/react";
 import { getFungibleTokens } from "./utils/FungibleTokenAccount";
+import { getTokenMap } from "./utils/FungibleTokenRegistry";
 import { PublicKey } from "@solana/web3.js";
+import { retrieveAccountTransactionsObject } from "./utils/Transactions";
 
 /**
  * Display fungible tokens and total value
@@ -43,8 +45,10 @@ export default function FungiblesView(props: any) {
      * */
     async function getWalletData(addr: PublicKey) {
         setIsLoadingWallet(true);
-        let data = await getFungibleTokens(addr);
-        let tokens: any[] = data.tokens;
+        let tokenMap = await getTokenMap();
+        await retrieveAccountTransactionsObject(addr, tokenMap);
+        let data = await getFungibleTokens(addr, tokenMap);
+        let tokens: any[] = data == null ? [] : data.tokens;
 
         setWalletTokens(tokens);
         setWalletvalue(data.netWorth);

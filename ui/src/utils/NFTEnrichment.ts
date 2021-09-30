@@ -44,7 +44,7 @@ export async function getNFTs(publicKey: PublicKey): Promise<Array<NftEnrichment
         // let mintInfo = await getMintInfo(new PublicKey(tokenInfo.mint));
         
         let metadataAccountInfo = await getNftMetadataAccountInfo(new PublicKey(tokenInfo.mint));
-        if (typeof metadataAccountInfo === "undefined")
+        if (metadataAccountInfo == null || typeof metadataAccountInfo === "undefined")
             continue;
 
         try {
