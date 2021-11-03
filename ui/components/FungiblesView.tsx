@@ -13,7 +13,10 @@ import {
     LinkBox,
     LinkOverlay,
 } from "@chakra-ui/react";
-import { getFungibleTokens, TokenEnrichment } from "./utils/FungibleTokenAccount";
+import {
+    getFungibleTokens,
+    TokenEnrichment,
+} from "../utils/FungibleTokenAccount";
 import { PublicKey } from "@solana/web3.js";
 
 function numberWithCommas(x: string): string {
@@ -27,7 +30,7 @@ export default function FungiblesView(props: any) {
     // Create state variables
     let temp: any[] = [];
     const [walletTokens, setWalletTokens] = React.useState(temp);
-    const [walletValue, setWalletvalue] = React.useState(0);
+    const [walletValue, setWalletValue] = React.useState(0);
     const [isLoadingWallet, setIsLoadingWallet] = React.useState(false);
 
     /**
@@ -38,7 +41,9 @@ export default function FungiblesView(props: any) {
             let pubKey = new PublicKey(props.addr);
             getWalletData(pubKey);
         } catch {
-            console.error("Invalid public key");
+            console.error("Could not get fungibles for public key");
+            setWalletTokens([]);
+            setWalletValue(0);
         }
     }, [props.addr]);
 
@@ -49,11 +54,13 @@ export default function FungiblesView(props: any) {
         setIsLoadingWallet(true);
         let tokens: TokenEnrichment[] = await getFungibleTokens(addr);
 
-        let tokenNotional = tokens.map((token) => (token.price ?? 0) * token.amount);
+        let tokenNotional = tokens.map(
+            (token) => (token.price ?? 0) * token.amount
+        );
         let netNotional = tokenNotional.reduce((agg, curr) => agg + curr);
 
         setWalletTokens(tokens);
-        setWalletvalue(netNotional);
+        setWalletValue(netNotional);
         setIsLoadingWallet(false);
     }
 
@@ -130,7 +137,10 @@ export default function FungiblesView(props: any) {
                         </Td>
 
                         <Td fontSize="xs">
-                            ${numberWithCommas((token.price * token.amount).toFixed(2))}
+                            $
+                            {numberWithCommas(
+                                (token.price * token.amount).toFixed(2)
+                            )}
                         </Td>
                     </Tr>
                 );

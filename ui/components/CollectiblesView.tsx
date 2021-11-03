@@ -1,18 +1,16 @@
 import { SimpleGrid, Spinner, Box } from "@chakra-ui/react";
 import { CARD_SIZE, IndexedCollectible, MetadataImage } from "./MetadataImage";
 import * as React from "react";
-import { getNFTs, NftEnrichment } from "./utils/NFTEnrichment";
+import { getNFTs, NftEnrichment } from "../utils/NFTEnrichment";
 import { PublicKey } from "@solana/web3.js";
 
 function renderTableData(collectibles: NftEnrichment[]) {
     return collectibles.map((collectible, index) => {
-        return (
-            <MetadataImage key={index} collectible={collectible} />
-        );
+        return <MetadataImage key={index} collectible={collectible} />;
     });
 }
 
-export function CollectiblesView(props: any) {
+export default function CollectiblesView(props: any) {
     const [isLoading, setIsLoading] = React.useState(false);
     let temp: any[] = [];
     const [collectibles, setCollectibles] = React.useState(temp);

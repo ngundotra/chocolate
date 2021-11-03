@@ -18,10 +18,24 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react",
-    "typeRoots": ["overrides", "node_modules/@types"],
+    "jsx": "preserve",
+    "typeRoots": [
+      "overrides",
+      "node_modules/@types"
+    ],
+    "incremental": true
   },
   "include": [
-    "src"
+    "src",
+    "pages/profile/[address].tsx",
+    "components/MetadataImage.tsx",
+    "components/FungiblesView.tsx",
+    "components/CollectiblesView.tsx",
+    "components/Header.tsx",
+    "components/Logo.tsx",
+    "components/TokensView.tsx"
+  ],
+  "exclude": [
+    "node_modules"
   ]
 }

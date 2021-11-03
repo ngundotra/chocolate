@@ -1,14 +1,14 @@
 import * as React from "react";
 import { Box, Image, ImageProps, Badge, Link } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
-import { NftEnrichment } from "./utils/NFTEnrichment";
+import { NftEnrichment } from "../utils/NFTEnrichment";
 
 export const CARD_SIZE = 200;
 
 export type IndexedCollectible = {
-    key: number,
-    collectible: NftEnrichment 
-}
+    key: number;
+    collectible: NftEnrichment;
+};
 
 export function MetadataImage(props: IndexedCollectible) {
     const [url, setUrl] = useState("");
@@ -23,7 +23,11 @@ export function MetadataImage(props: IndexedCollectible) {
             setSymbol(props.collectible.symbol);
             console.log("redirect url: ", props.collectible.imageUrl);
         });
-    }, [props.collectible.imageUrl]);
+    }, [
+        props.collectible.imageUrl,
+        props.collectible.name,
+        props.collectible.symbol,
+    ]);
 
     return (
         <Box maxW={CARD_SIZE} borderWidth="1px" borderRadius="lg">

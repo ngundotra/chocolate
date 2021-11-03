@@ -10,11 +10,11 @@ const CoinGecko = require("coingecko-api");
 const CoinGeckoClient = new CoinGecko();
 
 export type TokenEnrichment = {
-    name: string,
-    amount: number,
-    price: number | undefined,
-    website: string | undefined,
-    image: string | undefined,
+    name: string;
+    amount: number;
+    price: number | undefined;
+    website: string | undefined;
+    image: string | undefined;
 };
 
 /**
@@ -24,7 +24,9 @@ export type TokenEnrichment = {
  * @param accountAddr PublicKey of target token account
  * @returns Wallet data wrapped in promise
  */
-export async function getFungibleTokens(accountAddr: PublicKey): Promise<TokenEnrichment[]> {
+export async function getFungibleTokens(
+    accountAddr: PublicKey
+): Promise<TokenEnrichment[]> {
     // Connect to chain
     let connection = getConnection();
 
@@ -57,7 +59,7 @@ export async function getFungibleTokens(accountAddr: PublicKey): Promise<TokenEn
         price: nativeSolPrice,
         website: undefined,
         image: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png",
-    }
+    };
     tokenArr.push(nativeSolToken);
 
     // Iterate through all tokens in account
@@ -114,8 +116,10 @@ async function getTokenPriceById(tokenId: string) {
         });
         console.log(tokenId, response.data);
         return response.data.market_data.current_price.usd;
-    } catch (e) {
-        throw new Error(`Couldn't load data from CoinGecko, reason: ${e.toString()}`);
+    } catch (e: any) {
+        throw new Error(
+            `Couldn't load data from CoinGecko, reason: ${e.toString()}`
+        );
     }
 }
 

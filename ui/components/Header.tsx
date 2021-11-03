@@ -8,31 +8,32 @@ import {
     Text,
     Spacer,
 } from "@chakra-ui/react";
-import { Redirect } from "react-router";
+import Router from "next/router";
 
 export default function Header(props: any) {
-    const [addr, setAddr] = React.useState("");
-    const [doRedirect, setDoRedirect] = React.useState(false);
-    const givenAddr = props.addr;
-
     React.useEffect(() => {
-        setAddr(props.addr);
+        setDoRedirect(false);
     }, [props.addr]);
 
+    const givenAddr = props.addr;
+    const [addr, setAddr] = React.useState("");
+    const [doRedirect, setDoRedirect] = React.useState(false);
+
     const handleClick = () => {
-        props.updateAddr(addr);
-        if (addr !== givenAddr) {
-            console.log("Redirect imminent!");
+        if (addr !== "") {
             setDoRedirect(true);
         }
     };
 
-    if (doRedirect) {
-        return (
-            <Redirect to={`/profile/${addr}`}/>
-        )
-    }
+    const handleKeyPress = (event: any) => {
+        if (event.key === "Enter") {
+            handleClick();
+        }
+    };
 
+    if (doRedirect) {
+        Router.push(`/profile/${addr}`);
+    }
     return (
         <Box d="flex" alignItems="center" px="40px">
             <Text fontSize="xl" fontWeight="extrabold">
@@ -44,8 +45,9 @@ export default function Header(props: any) {
                     pr="4.5rem"
                     type="text"
                     placeholder="Search wallet address..."
-                    onInput={(e) => setAddr(e.target.value)}
+                    onInput={(e: any) => setAddr(e.target.value)}
                     value={addr}
+                    onKeyPress={(e) => handleKeyPress(e)}
                 />
                 <InputRightElement width="4.5rem" mr="4px">
                     <Button h="1.75rem" size="sm" onClick={handleClick}>
