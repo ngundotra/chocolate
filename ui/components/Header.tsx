@@ -9,15 +9,23 @@ import {
     Spacer,
 } from "@chakra-ui/react";
 import Router from "next/router";
+import { useCookies } from "react-cookie";
+
+import SlidingPane from "react-sliding-pane";
+import "react-sliding-pane/dist/react-sliding-pane.css";
 
 export default function Header(props: any) {
     React.useEffect(() => {
         setDoRedirect(false);
+        setWatchlist(false);
+        setAddr("");
     }, [props.addr]);
 
-    const givenAddr = props.addr;
     const [addr, setAddr] = React.useState("");
     const [doRedirect, setDoRedirect] = React.useState(false);
+    const [openWatchlist, setWatchlist] = React.useState(false);
+    const [nicknameCookies] = useCookies(["nicknames"]);
+    const [watchlistCookies] = useCookies(["watchlist"]);
 
     const handleClick = () => {
         if (addr !== "") {
@@ -31,11 +39,33 @@ export default function Header(props: any) {
         }
     };
 
-    if (doRedirect) {
-        Router.push(`/profile/${addr}`);
+    React.useEffect(() => {
+        if (doRedirect) {
+            Router.push(`/profile/${addr}`);
+        }
+    }, [doRedirect, addr]);
+
+    function ListOfFavorites() {
+        return watchlistCookies.watchlist.map((addr: any) => {
+            let displayName = nicknameCookies.nicknames[addr]
+                ? nicknameCookies.nicknames[addr]
+                : addr;
+
+            return (
+                <Text
+                    key={addr}
+                    onClick={() => {
+                        Router.push(`/profile/${addr}`);
+                    }}
+                >
+                    {displayName}
+                </Text>
+            );
+        });
     }
+
     return (
-        <Box d="flex" alignItems="center" px="40px">
+        <Box d="flex" alignItems="center" marginBottom="40px">
             <Text fontSize="xl" fontWeight="extrabold">
                 Chocolate
             </Text>
@@ -55,6 +85,23 @@ export default function Header(props: any) {
                     </Button>
                 </InputRightElement>
             </InputGroup>
+            <Spacer />
+            <Text pr="30px" onClick={() => setWatchlist(true)}>
+                Watchlist
+            </Text>
+            <SlidingPane
+                className="some-custom-class"
+                overlayClassName="some-custom-overlay-class"
+                isOpen={openWatchlist}
+                title="Watchlist"
+                from="right"
+                width="300px"
+                onRequestClose={() => {
+                    setWatchlist(false);
+                }}
+            >
+                <ListOfFavorites />
+            </SlidingPane>
         </Box>
     );
 }

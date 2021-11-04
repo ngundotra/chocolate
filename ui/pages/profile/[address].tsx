@@ -11,11 +11,9 @@ export default function ProfilePage() {
     let { address } = router.query;
 
     return (
-        <Box textAlign="center" fontSize="xl">
-            <Grid minH="100vh" p="40px">
-                <Header addr={address} />
-                <TokensView addr={address} />
-            </Grid>
+        <Box textAlign="center" fontSize="xl" px={30} py={20}>
+            <Header addr={address} />
+            <TokensView addr={address} />
         </Box>
     );
 }

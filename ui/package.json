@@ -30,8 +30,11 @@
         "node-ts-cache": "^4.2.3",
         "node-ts-cache-storage-memory": "^4.2.3",
         "react": "latest",
+        "react-cookie": "^4.1.1",
         "react-dom": "latest",
-        "react-icons": "^3.0.0",
+        "react-icons": "^3.11.0",
+        "react-sliding-pane": "^7.1.0",
+        "react-tooltip": "^4.2.21",
         "typescript": "^4.3.2",
         "web-vitals": "^0.2.2"
     },
