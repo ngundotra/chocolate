@@ -3,28 +3,38 @@ import { Box, Text, Input } from "@chakra-ui/react";
 import { useCookies } from "react-cookie";
 
 export default function WalletName(props: any) {
+    // States
     const [nickname, setNickname] = React.useState("");
     const [isEditing, setIsEditing] = React.useState(false);
+
+    // Cookies
     const [cookies, setCookie] = useCookies(["nicknames"]);
 
-    React.useEffect(() => {
-        setIsEditing(false);
-    }, []);
-
+    //Refs
     const wrapperRef = React.useRef(null);
-    const nicknameInputRef = React.useRef<HTMLInputElement>();
+    const nicknameInputRef = React.useRef<HTMLInputElement>(null);
     useOutsideAlerter(wrapperRef);
 
+    /**
+     * Run on initial load
+     */
     React.useEffect(() => {
+        // Get stored nickname
         let cookieList = cookies && cookies["nicknames"];
-        if (cookieList[props.addr]) {
+        if (cookieList[props.addr] && nickname != cookieList[props.addr]) {
             setNickname(cookieList[props.addr]);
         } else {
             setNickname("");
         }
-    }, [cookies, props.addr]);
 
+        // Reset editing to false
+        setIsEditing(false);
+    }, [props.addr]);
+
+    // Update nickname cookie
     React.useEffect(() => {
+        console.log(2);
+
         let cookieList;
         if (cookies["nicknames"] == undefined) {
             cookieList = {};
@@ -70,7 +80,7 @@ export default function WalletName(props: any) {
             nicknameInputRef.current.focus();
         }
     }, [isEditing]);
-
+    console.log("nickname?", nickname);
     return (
         <Box ref={wrapperRef} px={3}>
             {isEditing ? (
